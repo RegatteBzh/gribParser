@@ -1,8 +1,10 @@
 package grib
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -16,8 +18,6 @@ type Section0 struct {
 
 //Section1 is the grib2 Section1
 type Section1 struct {
-	Length              uint32
-	SectionNumber       uint8
 	GeneratingCenter    uint16
 	GeneratingSubCenter uint16
 	MasterTablesVersion uint8
@@ -42,35 +42,30 @@ type Section2 struct {
 // ReadSection0 read section0
 func ReadSection0(file *os.File) (section Section0, err error) {
 	section = Section0{}
-	err = readSection(file, binary.Size(section), &section)
+	data, err := ReadNextBytes(file, binary.Size(section))
+
+	buffer := bytes.NewBuffer(data)
+	err = binary.Read(buffer, binary.LittleEndian, &section)
+	if err != nil {
+		log.Fatal("binary.Read failed (ReadSection0)", err)
+	}
+
 	section.Length = reverse64(section.Length)
 	return
 }
 
-// ReadSection1 read section1
-func ReadSection1(file *os.File) (section Section1, err error) {
-	section = Section1{}
-	err = readSection(file, binary.Size(section), &section)
+func (section *Section1) Write(p []byte) (size int, err error) {
+	buffer := bytes.NewBuffer(p)
+
+	if err = binary.Read(buffer, binary.LittleEndian, section); err != nil {
+		log.Fatal("binary.Read failed (Section1.Write)", err)
+	}
+	size = len(p)
+
 	section.GeneratingCenter = reverse16(section.GeneratingCenter)
 	section.GeneratingSubCenter = reverse16(section.GeneratingSubCenter)
 	section.Year = reverse16(section.Year)
-	section.Length = reverse32(section.Length)
-	offset := int64(section.Length) - int64(binary.Size(section))
-	if offset > 0 {
-		file.Seek(offset, 1)
-	}
-	return
-}
 
-// ReadSection2 read section2
-func ReadSection2(file *os.File) (section Section2, err error) {
-	section = Section2{}
-	err = readSection(file, binary.Size(section), &section)
-	section.Length = reverse32(section.Length)
-	offset := int64(section.Length) - int64(binary.Size(section))
-	if offset > 0 {
-		file.Seek(offset, 1)
-	}
 	return
 }
 

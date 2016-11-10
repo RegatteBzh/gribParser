@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/RegatteBzh/gribParser/grib"
+	"github.com/regattebzh/gribParser/grib"
 )
 
 func main() {
@@ -28,8 +28,20 @@ func main() {
 		fmt.Printf("Section0:\n%+v\n", section0)
 	}
 
-	if section1, err := grib.ReadSection1(file); err == nil {
-		fmt.Printf("Section1:\n%+v\n", section1)
+	data, section, err := grib.ReadSection(file)
+	fmt.Printf("Found section%d\n%+v\nLength:%d\n", section.SectionType, section, len(data))
+
+	switch section.SectionType {
+	case 0:
+		fmt.Printf("Too late to read such section\n")
+	case 1:
+		currentSection := grib.Section1{}
+		if _, err := currentSection.Write(data); err != nil {
+			log.Fatal("Error on section1\n", err)
+		}
+		fmt.Printf("%+v\n", currentSection)
+	default:
+		fmt.Printf("Section%d reader not implemented\n", section.SectionType)
 	}
 
 }
