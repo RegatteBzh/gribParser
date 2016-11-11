@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-//Section is the grib2 Section
+//Section is the Template of all sections (except 0 and 8)
 type Section struct {
 	Length      uint32
 	SectionType uint8

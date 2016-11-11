@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-//Section0 is the grib2 Section0
+//Section0 is the Indicator Section
 type Section0 struct {
 	Reserved      uint16
 	Discipline    uint8
@@ -16,7 +16,7 @@ type Section0 struct {
 	Length        uint64
 }
 
-//Section1 is the grib2 Section1
+//Section1 is the  Identification Section
 type Section1 struct {
 	GeneratingCenter    uint16
 	GeneratingSubCenter uint16
@@ -33,11 +33,50 @@ type Section1 struct {
 	DataType            uint8
 }
 
-//Section2 is the grib2 Section2
+//Section2 is the Local Use Section
 type Section2 struct {
-	Length        uint32
-	SectionNumber uint8
+	LocalUse []byte
 }
+
+//Section3 is the Grid Definition Section
+type Section3 struct {
+	GribDefinitionSource         uint8
+	DataPointsNumber             uint32
+	OptionalListNumber           uint8
+	InterpretationNumber         uint8
+	GridDefinitionTemplateNumber uint16
+	GridDefinitionTemplate       []byte
+	OptionalList                 []byte
+}
+
+//Section4 is the Product Definition Section
+type Section4 struct {
+	CoordinateValuesNumber          uint16
+	ProductDefinitionTemplateNumber uint16
+	ProductDefinitionTemplate       []byte
+	OptionalCoordinateValues        []byte
+}
+
+//Section5 is the Data Representation Section
+type Section5 struct {
+	DataPointsNumber                 uint32
+	DataRepresentationTemplateNumber uint16
+	DataRepresentationTemplate       []byte
+}
+
+//Section6 is the Bit Map Section
+type Section6 struct {
+	BitMapIndicator uint8
+	BitMap          []byte
+}
+
+//Section7 is the Data Section
+type Section7 struct {
+	Data []byte
+}
+
+//Section8 is the End section
+//uint32 = "7777"
 
 // ReadSection0 read section0
 func ReadSection0(file *os.File) (section Section0, err error) {
